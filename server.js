@@ -1,27 +1,33 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
+const cors=require('cors');
+
 
 const app = express();
 
-app.use(express.json());
-const database ={
-    users : [
-    {
-        id: '123',
-        name: 'John',
-        email: 'john@gmail.com',
-        password: 'dogs',
-        entries: 0,
-        joined: new Date()
-    },
-    {
-        id: '124',
-        name: 'Fedi',
-        email: 'Fedi@gmail.com',
-        password: 'cats',
-        entries: 0,
-        joined: new Date()
-    }
+
+app.use(cors())
+app.use(express.json()); 
+
+
+const database = {
+    users: [
+        {
+            id: '123',
+            name: 'John',
+            email: 'john@gmail.com',
+            password: 'dogs',
+            entries: 0,
+            joined: new Date()
+        },
+        {
+            id: '124',
+            name: 'Fedi',
+            email: 'Fedi@gmail.com',
+            password: 'cats',
+            entries: 0,
+            joined: new Date()
+        }
     ]
 }
 
@@ -37,30 +43,52 @@ app.post('/signin', (req, res) => {
     }
 
 })
-app.post('/register',(req,res)=>{
-    const {email,name,password} = req.body;
+app.post('/register', (req, res) => {
+    const { email, name, password } = req.body;
     database.users.push({
         id: '124',
         name: name,
         email: email,
         password: password,
-        entries:0,
-        joined : new Date()
+        entries: 0,
+        joined: new Date()
     })
-    res.json(database.users[database.users.length-1])
+    res.json(database.users[database.users.length - 1])
 
 })
 
-app.listen(3000, () => {
-    console.log("app is running on port 3000")
+app.get('/profile/:id', (req, res) => {
+    const { id } = req.params;
+    let found = false;
+    database.users.forEach(user => {
+        if (user.id === id) {
+            found = true;
+            return res.json(user);
+        }
+
+    })
+    if (!found) {
+        res.status(404).json("User Not Found")
+    }
+
 })
 
+app.put('/image', (req, res) => {
+    const { id } = req.body;
+    let found = false;
+    database.users.forEach(user => {
+        if (user.id === id) {
+            found = true;
+            user.entries++
+            return res.json(user.entries);
+        }
 
-/* Planning routes :
-/ --> res=this is working
-/signin --> most likely Post , res with Sucess/fail
-/register --> POST , res with new user
-/porfile/:userId --> Get , res with user
-/image --> PUT : update the score , res with updated user or count
-this might change
-*/
+    })
+    if (!found) {
+        res.status(404).json("User Not Found")
+    }
+})
+
+app.listen(3001, () => {
+    console.log("app is running on port 3001")
+})
